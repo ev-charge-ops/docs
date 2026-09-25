@@ -6,7 +6,7 @@
 
 ## Contexto
 
-O produto tem cinco repositórios independentes (`api`, `web`, `mobile`, `ml` e `docs`) e uma equipe pequena. Cada mudança precisa ser revisada por PR, testada automaticamente e publicada sem passos manuais, e a banca precisa encontrar tudo no ar. O orçamento é zero, então usamos os planos gratuitos.
+O produto tem cinco repositórios independentes (`api`, `web`, `mobile`, `ml` e `docs`) e uma equipe pequena. Cada mudança precisa ser revisada por PR, testada automaticamente e publicada sem passos manuais, e a banca precisa encontrar tudo no ar. O orçamento é mínimo, então usamos os planos gratuitos sempre que possível; a única exceção é o Expo, no plano pago Starter (veja abaixo).
 
 A Sprint 01 previa Docker, Redis e Railway, e o protótipo rodava numa VPS com Metro servindo bundle de desenvolvimento.
 
@@ -31,6 +31,9 @@ A Sprint 01 previa Docker, Redis e Railway, e o protótipo rodava numa VPS com M
   - Fingerprint novo, ou seja, mudança nativa: build novo, com APK Android de distribuição interna e build iOS enviado ao TestFlight.
   - Fingerprint já existente, ou seja, mudança só de JavaScript: atualização OTA (EAS Update) no canal `preview`, sem novo build.
   - Cada PR publica uma OTA no branch do PR para revisão ([`publish-pr-update.yml`](https://github.com/ev-charge-ops/mobile/blob/main/.eas/workflows/publish-pr-update.yml)).
+  - Todo deploy do app passa por esses workflows, na nuvem da EAS. Não há `eas update` nem build feitos da máquina de um integrante.
+  - O projeto está no plano pago **Expo Starter**, com cota de builds na nuvem maior que a do plano gratuito.
+  - **Histórico:** até 2026-10-07 o projeto usava o plano gratuito da EAS. Quando a cota de builds na nuvem acabou, a equipe publicou OTAs temporariamente da máquina de um integrante com `eas update --branch preview` depois de cada merge. Esse contorno foi abandonado em 2026-10-07, com a mudança para o plano Starter.
 - **Segredos** ficam nas variáveis de ambiente da Vercel e da EAS, nunca no repositório. Os arquivos `.env.example` documentam cada variável.
 
 ## Consequências
@@ -42,6 +45,6 @@ A Sprint 01 previa Docker, Redis e Railway, e o protótipo rodava numa VPS com M
 - **Negativas e riscos:**
   - Funções serverless não guardam estado entre requisições: o rate limit fica em memória por instância (ADR 0008) e não há processo em segundo plano (ADR 0010).
   - O plano gratuito do Neon limita os branches a 10, daí a limpeza automática.
-  - A cota de builds na nuvem do plano gratuito da EAS é limitada. Quando ela acaba, a OTA é publicada da máquina de um integrante com `eas update --branch preview` depois de cada merge.
+  - O deploy do app depende do plano pago Expo Starter. Se a assinatura for cancelada, a cota do plano gratuito volta a limitar os builds na nuvem.
   - O iOS depende de convite no TestFlight. O Android é instalado pelo APK.
 - **Desvio da Sprint 01:** saíram Docker, Redis e Railway, e entraram Vercel, Neon e EAS. A VPS do protótipo, que servia o bundle de desenvolvimento pelo Expo Go, foi substituída por builds reais e atualizações OTA.
