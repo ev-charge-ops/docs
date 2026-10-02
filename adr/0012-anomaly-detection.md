@@ -2,6 +2,7 @@
 
 - **Status:** aceita
 - **Data:** 2026-10-07
+- **Complementada por:** ADR 0020 (revisão das anomalias pelo gestor)
 
 ## Contexto
 
@@ -34,5 +35,5 @@ Não existem rótulos reais de anomalia, nem nos dados públicos nem no condomí
   - As anomalias da avaliação são sintéticas, e a precisão real depende da frequência de anomalias na operação.
   - A ocupação "fantasma" (horas conectado quase sem carregar) é pouco detectada em `PRIVATE` (cobertura de 12%), porque é comum em garagens residenciais. Essa situação é tratada pela multa por ocupação.
   - Sessões `INTERRUPTED` não são pontuadas.
-  - Ainda não registramos a decisão do gestor sobre cada alerta. Esse registro geraria rótulos para recalibrar o limiar.
+  - Ainda não registramos a decisão do gestor sobre cada alerta. Esse registro geraria rótulos para recalibrar o limiar. **Atualização (2026-10-08):** resolvido pelo ADR 0020, em que o gestor confirma ou descarta cada sinalização sem alterar a cobrança.
 - **Desvio da Sprint 01:** o plano colocava a detecção de anomalias na Fase 4. Ela entrou como planejado, e o modelo de precificação (ADR 0011) também, de modo que o MVP tem dois modelos em produção, além do mínimo de um previsto nos critérios de sucesso.
