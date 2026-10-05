@@ -146,7 +146,9 @@ flowchart LR
     G --> I["Ocupação<br/>multa por minuto, com teto"]
     I --> C["Encerramento<br/>total = kWh × tarifa + multa"]
     C --> R["Rateio do mês por unidade<br/>energia + acesso + ocupação"]
+    R --> U["Extrato da unidade<br/>no app do motorista"]
     C --> P["Ponto comercial<br/>captura no cartão"]
+    C --> F["Fila do ponto<br/>reserva de 10 min ao próximo"]
 ```
 
 | Etapa | Onde está no código |
@@ -154,33 +156,40 @@ flowchart LR
 | Máquina de estados `AWAITING_PAYMENT → PENDING → ACTIVE → GRACE → IDLE → CLOSED / INTERRUPTED` | [`charging-session.entity.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/domain/charging-session.entity.ts) · [ADR 0010](adr/0010-charging-session-state-machine.md) |
 | Início com alocação de potência pela demanda contratada | [`start-session.service.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/commands/start-session/start-session.service.ts) · [`site-capacity.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charge-points/site-capacity.ts) |
 | Telemetria e avanço do estado até o instante atual | [`session-synchronizer.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/session-synchronizer.ts) · [`mock-charger.adapter.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charger-gateway/adapters/mock-charger.adapter.ts) |
+| Linha do tempo projetada (fim da recarga, da tolerância e início da multa) | [`session-projector.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/session-projector.ts) · [ADR 0017](adr/0017-push-notifications-and-projected-reminders.md) |
 | Custo da energia, tolerância e multa por ocupação | [`session-fees.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/domain/session-fees.ts) · [`tariff-rules.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charge-points/tariff-rules.ts) |
-| Limite de recarga (100%, kWh ou R$) | [`charging-limit.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/domain/charging-limit.ts) |
+| Limite de recarga (100%, kWh, R$ ou % da bateria) | [`charging-limit.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/domain/charging-limit.ts) |
 | Encerramento, pontuação de anomalia e liquidação do pagamento | [`stop-session.service.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/commands/stop-session/stop-session.service.ts) |
+| Fila do ponto e reserva de 10 min | [`queue-rules.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charge-points/queue/queue-rules.ts) · [ADR 0019](adr/0019-charge-point-queue.md) |
 | Rateio mensal por unidade | [`monthly-statement.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/monthly-statement.ts) · [ADR 0013](adr/0013-monthly-cost-sharing.md) |
+| Extrato da unidade para o motorista (`GET /me/statements/{month}`), com o mesmo cálculo do rateio | [`unit-statement.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/unit-statement.ts) |
 | Exportação CSV | [`statement-csv.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/statement-csv.ts) |
-| Visão geral com capacidade elétrica e alerta de aumento de demanda | [`demand-profile.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/demand-profile.ts) |
+| Visão geral: capacidade elétrica, pico do mês, potência ao vivo por ponto, mês anterior e visitantes | [`demand-profile.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/demand-profile.ts) · [`overview-metrics.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/overview-metrics.ts) |
 | Pré-autorização e captura no Stripe (ponto comercial) | [`session-payments.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/session-payments.ts) · [ADR 0014](adr/0014-stripe-preauthorization.md) |
-| Telas do motorista | [`mobile/src/features/charging`](https://github.com/ev-charge-ops/mobile/tree/main/src/features/charging) |
-| Telas do gestor (rateio, sessões e visão geral) | [`web/src/app/routes`](https://github.com/ev-charge-ops/web/tree/main/src/app/routes) |
+| Telas do motorista | [`mobile/src/features`](https://github.com/ev-charge-ops/mobile/tree/main/src/features) (`home`, `charging`, `notifications`, `account` e `privacy`) |
+| Telas do gestor (visão geral, sessões, rateio, pontos, tarifa e moradores) | [`web/src/app/routes`](https://github.com/ev-charge-ops/web/tree/main/src/app/routes) |
 
-As regras de domínio têm testes unitários (`*.spec.ts`), e o fluxo completo tem testes e2e contra Postgres em [`api/test`](https://github.com/ev-charge-ops/api/tree/main/test): `charging-sessions`, `cost-sharing`, `payments` e `ml-integration`.
+As regras de domínio têm testes unitários (`*.spec.ts`), e o fluxo completo tem testes e2e contra Postgres em [`api/test`](https://github.com/ev-charge-ops/api/tree/main/test), entre eles `charging-sessions`, `cost-sharing`, `payments`, `ml-integration`, `charge-point-queue`, `anomaly-review` e `organization-overview`.
 
 ### 5.2 IA estrutural
 
-A IA está no caminho de duas decisões do produto, e não num relatório à parte.
+A IA está no caminho de duas decisões do produto, e não num relatório à parte: o preço de cada sessão e a lista de sessões que o gestor revisa antes de fechar o mês.
 
 | | Fator de demanda | Detecção de anomalias |
 |---|---|---|
 | Onde atua | preço por kWh no início de cada sessão | toda sessão encerrada |
+| Entradas | hora e dia da semana, ocupação do local, tamanho da fila e tipo do ponto | energia, duração, tempo ocioso, potências e hora de início |
 | Modelo | `GradientBoostingRegressor`: prevê a demanda das próximas 3 h e converte em fator entre 0,8 e 1,5 | `IsolationForest`, um por tipo de ponto, com score de 0 a 1 e limiar 0,5 |
 | Resultado no teste | R² 0,774 contra 0,671 da persistência (MAE 0,093 e RMSE 0,176) | F1 0,72, ROC-AUC 0,97 e 2,1% de falsos positivos; 309 de 309 sessões reais acima de 72 h sinalizadas |
-| Efeito | ponto comercial: `tarifa base × fator`; ponto privado: fator só informativo, sem margem na energia | alerta, filtro e explicação no portal para o gestor revisar antes de fechar o mês |
-| Se o `ml` falhar | **fallback por regras** (pico das 18 h às 21 h ou ocupação ≥ 80% = 1,5; madrugada com ocupação < 50% = 0,8; senão 1,0). A sessão registra a origem (`MODEL` ou `RULE`) | a sessão fecha normalmente, **sem score**, e o erro é registrado no log. Não há regra substituta em produção |
-| Código na API | [`ml-demand-factor.provider.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/intelligence/demand-factor/ml-demand-factor.provider.ts) · [`rule-demand-factor.provider.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/intelligence/demand-factor/rule-demand-factor.provider.ts) | [`ml-anomaly-scorer.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/intelligence/anomaly/ml-anomaly-scorer.ts) · [`session-features.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/commands/stop-session/session-features.ts) |
-| Decisão | [ADR 0011](adr/0011-pricing-with-demand-factor.md) | [ADR 0012](adr/0012-anomaly-detection.md) |
+| Efeito | ponto comercial: `tarifa base × fator`; ponto privado: fator só informativo, sem margem na energia | a sessão sinalizada entra na fila de revisão do portal |
+| Decisão humana | o gestor define a tarifa base; o fator fica travado na sessão e aparece no app e no recibo | o gestor **confirma** ou **descarta** cada sinalização, com observação. A cobrança e o rateio não mudam ([ADR 0020](adr/0020-manager-anomaly-review.md)) |
+| Se o `ml` falhar | **fallback por regras** (pico das 18 h às 21 h, ocupação ≥ 80% ou fila = 1,5; madrugada com ocupação < 50% = 0,8; senão 1,0). A sessão registra a origem (`MODEL` ou `RULE`) | a sessão fecha normalmente, **sem score**, e o erro é registrado no log. Não há regra substituta em produção |
+| Código na API | [`ml-demand-factor.provider.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/intelligence/demand-factor/ml-demand-factor.provider.ts) · [`rule-demand-factor.provider.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/intelligence/demand-factor/rule-demand-factor.provider.ts) | [`ml-anomaly-scorer.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/intelligence/anomaly/ml-anomaly-scorer.ts) · [`session-features.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/commands/stop-session/session-features.ts) · [`anomaly-review.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/charging-sessions/domain/anomaly-review.ts) |
+| Decisão | [ADR 0011](adr/0011-pricing-with-demand-factor.md) | [ADR 0012](adr/0012-anomaly-detection.md) · [ADR 0020](adr/0020-manager-anomaly-review.md) |
 
 - A API chama o `ml` com timeout de **1,5 s**. Sem `ML_URL`, a precificação usa as regras e as sessões ficam sem score.
+- O tamanho real da fila do local entra no fator de demanda desde a [fila por ponto](adr/0019-charge-point-queue.md).
+- As revisões do gestor ficam gravadas com autor, data e observação e servem como rótulos para recalibrar o limiar no futuro.
 - Os modelos foram treinados com dados públicos (CC BY 4.0): recarga residencial na Noruega (Sørensen, 2024, DOI [10.5281/zenodo.13896176](https://doi.org/10.5281/zenodo.13896176)) e recarga pública em Turku, na Finlândia (Andrenacci, Bosch e Kulla, 2021, DOI [10.5281/zenodo.5721233](https://doi.org/10.5281/zenodo.5721233)).
 - Detalhes no [README do `ml`](https://github.com/ev-charge-ops/ml#readme) e nos model cards de [demanda](https://github.com/ev-charge-ops/ml/blob/main/artifacts/demand_factor/v1/model-card.md) e de [anomalias](https://github.com/ev-charge-ops/ml/blob/main/artifacts/anomaly/v1/model-card.md).
 
@@ -188,7 +197,7 @@ A IA está no caminho de duas decisões do produto, e não num relatório à par
 
 - Evidências: seção [10](#10-evidências) e pasta [`evidencias/`](evidencias/).
 - Autoria: seção [1](#1-equipe) e histórico de commits e PRs de cada repositório.
-- Organização: cinco repositórios com CI, ADRs numerados em [`adr/`](adr/) e este README como índice.
+- Organização: cinco repositórios com CI, ADRs numerados em [`adr/`](adr/), referência de design no [canvas do Pulse](https://claude.ai/artifact/BWq3Na6AKkLLsnc3KUbHgR) e este README como índice.
 
 ## 6. Como testar a demonstração em produção
 
@@ -199,17 +208,19 @@ A IA está no caminho de duas decisões do produto, e não num relatório à par
 | Gestor (síndico) | `manager@evchargeops.dev` | portal [app.evchargeops.com.br](https://app.evchargeops.com.br) |
 | Motorista (unidade B · 42) | `driver@evchargeops.dev` | app mobile |
 
-**As senhas estão no arquivo `.TXT` da entrega** e não ficam publicadas neste repositório. Também dá para criar uma conta própria no app; ela entra como motorista sem condomínio e só enxerga o ponto comercial.
+**As senhas estão no arquivo `.TXT` da entrega** e não ficam publicadas neste repositório. Também dá para criar uma conta própria no app; ela entra como motorista sem condomínio e só enxerga os pontos comerciais.
 
-O banco de produção tem o condomínio **Residencial Aclimação** com 3 pontos (2 `PRIVATE` e 1 `COMMERCIAL`), 20 moradores, 184 sessões históricas dos últimos meses e 8 sessões anômalas para a detecção aparecer no portal.
+O seed cria o condomínio **Residencial Aclimação** com 3 pontos (2 `PRIVATE` e 1 `COMMERCIAL`), 20 moradores, 184 sessões históricas dos últimos meses e 8 sessões anômalas para revisão no portal. Ele também cria a rede comercial fictícia (3 operadoras e 12 pontos, com histórico próprio) e grava as fotos dos pontos.
 
 ### Roteiro sugerido
 
-1. **Portal, como gestor:** entre em [app.evchargeops.com.br](https://app.evchargeops.com.br) e veja a visão geral do mês (consumo, valores, capacidade elétrica e anomalias recentes). Abra **Sessões**, filtre por anomalia e abra uma sessão sinalizada para ver a explicação do score. Abra **Rateio**, troque o mês e exporte o CSV.
-2. **App, como motorista:** instale o app (link do APK Android ou convite do TestFlight no `.TXT`) e entre com a conta do motorista. Escolha um ponto `PRIVATE` (L1-01 ou L1-02), veja o preço e o fator de demanda e inicie a recarga.
-3. **Simulação acelerada:** em produção, cada segundo real equivale a um minuto de recarga (`SIMULATION_SPEED`). Em poucos minutos a sessão passa por carregando, tolerância (10 min simulados) e ocupação com multa. Encerre a sessão e veja o recibo.
-4. **Volte ao portal:** a sessão aparece em **Sessões** com o score de anomalia e entra no **Rateio** da unidade B · 42.
-5. **Ponto de visitantes:** no app, inicie uma recarga no L2-01 (`COMMERCIAL`). O preço é tarifa base × fator de demanda. No PaymentSheet, use o cartão de teste do Stripe **`4242 4242 4242 4242`**, com qualquer validade futura e qualquer CVC. O valor fica pré-autorizado, a recarga começa e, no encerramento, só o valor consumido é capturado.
+1. **Portal, como gestor:** entre em [app.evchargeops.com.br](https://app.evchargeops.com.br). Na **Visão geral**, veja os pontos em uso, a capacidade elétrica com o pico do mês, os indicadores contra o mês anterior e as anomalias. Clique em **Revisar** numa anomalia, confirme ou descarte com uma observação e veja que o valor da sessão não muda. Abra **Sessões**, ligue "Somente anomalias" e abra a gaveta de uma sessão. Abra **Rateio mensal**, troque o mês e exporte o CSV.
+2. **App, como motorista:** instale o app (link do APK Android ou convite do TestFlight no `.TXT`) e entre com a conta do motorista. Se a tela de consentimentos aparecer, aceite as finalidades obrigatórias. Em **Início**, veja o condomínio e os pontos; em **Pontos**, veja o mapa e a lista por distância.
+3. **Recarga num ponto privado:** abra L1-01 ou L1-02, veja o preço e o fator de demanda informativo, toque em **Iniciar recarga**, escolha o limite (por exemplo 80%) e confirme.
+4. **Simulação acelerada:** em produção, cada segundo real equivale a um minuto de recarga (`SIMULATION_SPEED`). Em poucos minutos a sessão passa por carregando, tolerância (10 min simulados) e ocupação com multa, na tela noturna. Os lembretes locais avisam a conclusão, o fim da tolerância e o início da multa. Encerre a sessão e veja o recibo.
+5. **Histórico e portal:** no app, a sessão aparece no **Histórico** e no extrato do mês da unidade B · 42. No portal, ela aparece em **Sessões**, com o score de anomalia, e no **Rateio** da mesma unidade, com o mesmo valor.
+6. **Ponto de visitantes:** no app, inicie uma recarga no L2-01 (`COMMERCIAL`). A tela de pagamento mostra tarifa base × fator de demanda e o valor da pré-autorização. No PaymentSheet, use o cartão de teste do Stripe **`4242 4242 4242 4242`**, com qualquer validade futura e qualquer CVC. O valor fica pré-autorizado, a recarga começa e, no encerramento, só o valor consumido é capturado.
+7. **Fila (opcional, com duas contas):** com um ponto em uso por uma conta, entre na fila com outra. Ao encerrar a primeira sessão, a segunda recebe o aviso "Sua vez" e o ponto fica reservado por 10 minutos.
 
 A API pode ser explorada pelo Swagger em [api.evchargeops.com.br/docs](https://api.evchargeops.com.br/docs).
 
@@ -220,7 +231,7 @@ Requisitos: Node 24, Postgres 17, [uv](https://docs.astral.sh/uv/) (Python 3.12)
 | Repositório | Comandos | Observações |
 |---|---|---|
 | [`ml`](https://github.com/ev-charge-ops/ml#readme) | `uv sync` e `uv run --with uvicorn uvicorn ml.app:app --reload` | os modelos já estão versionados em `artifacts/`; para retreinar, veja o README |
-| [`api`](https://github.com/ev-charge-ops/api) | `npm ci`, `cp .env.example .env`, `npx prisma migrate dev`, `npm run db:seed` e `npm run start:dev` | sobe em `http://localhost:3000`, com Swagger em `/docs`. Sem `ML_URL`, usa as regras; sem `STRIPE_SECRET_KEY`, o ponto comercial responde 503; com `MAIL_DRIVER=console`, os e-mails saem no log. O seed exige `SEED_*_PASSWORD` |
+| [`api`](https://github.com/ev-charge-ops/api) | `npm ci`, `cp .env.example .env`, `npx prisma migrate dev`, `npm run db:seed` e `npm run start:dev` | sobe em `http://localhost:3000`, com Swagger em `/docs`. Sem `ML_URL`, usa as regras; sem `STRIPE_SECRET_KEY`, o ponto comercial responde 503; com `MAIL_DRIVER=console` e `PUSH_DRIVER=console`, e-mails e pushes saem no log. O seed exige `SEED_*_PASSWORD` e usa `MEDIA_BASE_URL` para as fotos dos pontos |
 | [`web`](https://github.com/ev-charge-ops/web) | `npm ci`, `cp .env.example .env` e `npm run dev` | `VITE_API_URL=http://localhost:3000`; sobe em `http://localhost:5173` |
 | [`mobile`](https://github.com/ev-charge-ops/mobile#readme) | `npm ci`, `cp .env.example .env` e `npx expo start` | `EXPO_PUBLIC_API_URL` deve apontar para a API, usando o IP da máquina quando rodar no aparelho |
 
@@ -239,13 +250,19 @@ Testes: `npm test` (e `npm run test:e2e` na `api`) nos projetos Node e `uv run p
 | [0013](adr/0013-monthly-cost-sharing.md) | rateio mensal por unidade e exportação CSV |
 | [0014](adr/0014-stripe-preauthorization.md) | pré-autorização com captura manual no Stripe para o ponto comercial |
 | [0015](adr/0015-deploy-and-ci.md) | CI por repositório, Vercel, branches do Neon por preview e EAS Workflows |
+| [0016](adr/0016-pulse-design-system.md) | design system Pulse: tokens, superfícies noturnas, movimento, contraste e mídia |
+| [0017](adr/0017-push-notifications-and-projected-reminders.md) | avisos, push pelo Expo e lembretes locais pela linha do tempo projetada |
+| [0018](adr/0018-lgpd-consent.md) | consentimento LGPD por finalidade, exportação de dados e pedido de exclusão |
+| [0019](adr/0019-charge-point-queue.md) | fila nos pontos com reserva de 10 minutos |
+| [0020](adr/0020-manager-anomaly-review.md) | revisão das anomalias pelo gestor, sem alterar a cobrança |
 
 Outros pontos que valem para todo o projeto:
 
 - **TypeScript de ponta a ponta**, com tipos gerados do OpenAPI. Uma mudança de contrato quebra o build dos clientes antes de chegar à produção.
 - **Domínio sem framework:** entidades e cálculos são funções e classes puras, testadas sem banco. Os módulos da API seguem comandos e consultas separados (`commands/` e `queries/`).
 - **Dinheiro em centavos e energia em Wh** no domínio, sem ponto flutuante nas somas.
-- **Integrações desligáveis:** IA, Stripe, e-mail e carregador têm um adapter de desenvolvimento ou desabilitado, então cada repositório roda isolado.
+- **Integrações desligáveis:** IA, Stripe, e-mail, push e carregador têm um adapter de desenvolvimento ou desabilitado, então cada repositório roda isolado.
+- **Sessão estável no app:** o refresh token rotacionado aceita reuso por 60 s (`REFRESH_REUSE_GRACE_SECONDS`), e o app faz um único refresh por vez e não desloga em falhas de rede. Isso evita o logout depois de uma atualização OTA.
 
 ## 9. Desvios em relação à Sprint 01
 
