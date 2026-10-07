@@ -309,7 +309,7 @@ A pasta [`evidencias/`](evidencias/) tem a lista do que foi capturado e os arqui
 - O carregador é simulado: não há comunicação real com o HCA G2.
 - Sem processo em segundo plano, sessões e filas só avançam quando alguém as consulta. Os valores continuam corretos, porque são calculados pelos horários.
 - Os lembretes da recarga dependem da linha do tempo projetada pelo simulador. Com o carregador real, a projeção não existe, e os avisos voltariam a depender de uma leitura da sessão ou de um job.
-- O push real depende de `PUSH_DRIVER=expo` no ambiente. Os recibos de entrega do Expo não são consultados.
+- Em produção o push real está ativo (`PUSH_DRIVER=expo`); em desenvolvimento, com `PUSH_DRIVER=console`, os pushes só aparecem no log. Os recibos de entrega do Expo não são consultados.
 - O fator de demanda considera a ocupação e a fila do local inteiro, não de cada ponto.
 - Os modelos foram treinados com dados europeus e as anomalias foram avaliadas com casos sintéticos.
 - A revisão de anomalias não altera valores: uma anomalia confirmada exige ajuste fora do sistema.
