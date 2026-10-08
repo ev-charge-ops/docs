@@ -56,18 +56,34 @@ O cenário adotado é o condomínio **Residencial Aclimação**, com três ponto
 | L1-02 · Garagem L1, vaga 13 (7 kW) | `PRIVATE` | rateio mensal por unidade, kWh repassado a custo |
 | L2-01 · Garagem L2, visitantes (22 kW) | `COMMERCIAL` | cartão via Stripe, com pré-autorização e tarifa dinâmica |
 
-- **App do motorista** (Expo, Android e iOS):
-  - lista os pontos com estado e preço do momento;
-  - inicia a recarga com limite (até 100%, kWh ou R$);
-  - acompanha a sessão ao vivo (kWh, potência, carga e valor), a tolerância e a multa por ocupação;
-  - paga com cartão no ponto de visitantes e mostra o recibo e o histórico.
+Ao redor do condomínio, o seed cria uma **rede comercial fictícia**, com 3 operadoras e 12 pontos `COMMERCIAL` (de 7 a 60 kW, a até 3,2 km), para o mapa do app mostrar recarga pública próxima. Os nomes das operadoras são inventados.
+
+- **App do motorista** (Expo, Android e iOS, versão 1.3.0). A navegação tem quatro abas e um botão redondo de recarga:
+  - **Início:** saudação com condomínio e unidade, a recarga em andamento (carga, limite, previsão de término, energia, potência e valor) e os pontos do condomínio com foto, preço e estado;
+  - **Pontos:** mapa noturno em tela cheia com pins por estado, filtros (livres, potência e regime), modo lista ordenado por distância e o detalhe do ponto numa sheet clara com foto, preço, fator de demanda e regra de cobrança;
+  - **Histórico:** extrato do mês da unidade (rateio, energia por dia, taxa de acesso e ocupação) e a lista de recargas, com o recibo de cada uma;
+  - **Conta:** perfil, resumo do mês, alterar ou criar senha, privacidade e dados (consentimentos LGPD, exportação e pedido de exclusão) e sair;
+  - **botão de recarga:** leva à sessão ao vivo quando há uma aberta, ou à aba Pontos;
+  - **sino de avisos** no cabeçalho, com push e lembretes locais de conclusão, fim da tolerância e início da multa;
+  - **recarga:** limite por % da bateria, kWh, R$ ou até encher; sessão ao vivo em tela noturna (carregando, tolerância e ocupação com multa); pagamento no cartão no ponto de visitantes; recibo com a curva de potência;
+  - **fila:** num ponto ocupado, o motorista entra na fila e, na vez dele, o ponto fica reservado por 10 minutos.
 - **Portal do gestor** (React):
-  - visão geral do mês com capacidade elétrica e anomalias;
-  - sessões com filtros e explicação do score de anomalia;
+  - visão geral do mês: pontos em uso ao vivo, capacidade elétrica com potência por ponto e pico do mês, indicadores com variação sobre o mês anterior e sessões de visitantes, energia por semana e anomalias para revisar;
+  - sessões com filtros, score de anomalia e gaveta de detalhes com a **revisão do gestor** (confirmar ou descartar, sem mudar a cobrança);
   - rateio mensal por unidade com exportação CSV;
-  - pontos e capacidade, regras de tarifa e moradores com convites.
-- **API** (NestJS): concentra o domínio de sessões, preços, pagamentos e rateio e conversa com o carregador por uma port.
-- **Serviço de IA** (FastAPI + scikit-learn): dois modelos em produção, o **fator de demanda**, que entra no preço por kWh, e a **detecção de anomalias**, que pontua cada sessão encerrada.
+  - pontos e capacidade, regras de tarifa com simulação de recarga e moradores com convites.
+- **API** (NestJS): concentra o domínio de sessões, preços, pagamentos, filas, avisos, consentimentos e rateio e conversa com o carregador por uma port.
+- **Serviço de IA** (FastAPI + scikit-learn): dois modelos em produção, o **fator de demanda**, que entra no preço por kWh, e a **detecção de anomalias**, que pontua cada sessão encerrada para o gestor revisar.
+
+### Identidade visual
+
+O app e o portal seguem o design system **Pulse** ([ADR 0016](adr/0016-pulse-design-system.md)). A referência de design, com tokens, componentes, logo, movimento e uma prancheta por tela, está no [canvas do Pulse](https://claude.ai/artifact/BWq3Na6AKkLLsnc3KUbHgR).
+
+- **Estúdio claro:** fundo cinza, cartões brancos e CTA preto. O verde fica reservado para energia; âmbar, vermelho e azul marcam atenção (tolerância, pico e fila), crítico (multa, falha e anomalia) e informação (regras e IA).
+- **Superfícies noturnas** no mapa e na recarga ao vivo.
+- **Tipografia** Urbanist e JetBrains Mono, e o logo "anel de carga", que também é o medidor da recarga ao vivo.
+- **Movimento** em 140, 320 e 480 ms com `cubic-bezier(.16,1,.3,1)`, desligado quando o sistema pede movimento reduzido.
+- **Mídia:** vídeos curtos em loop (carro em estúdio, garagem e carro visto de cima) e fotos dos pontos, com pôster para movimento reduzido.
 
 ## 3. Arquitetura
 
@@ -86,6 +102,7 @@ flowchart LR
     DB[("Neon Postgres<br/>Prisma")]
     ST["Stripe<br/>modo de teste"]
     RS["Resend<br/>e-mail transacional"]
+    EP["Expo Push"]
     CG["ChargerGateway<br/>MockChargerGateway · SEMS futuro"]
     HCA["GoodWe HCA G2"]
 
@@ -97,13 +114,16 @@ flowchart LR
     A -- "PaymentIntent<br/>captura manual" --> ST
     ST -- "webhook" --> A
     A --> RS
+    A -- "avisos da sessão,<br/>pagamento e fila" --> EP
+    EP --> M
     A --> CG
     CG -. "API SEMS (não implementada)" .-> HCA
 ```
 
 - O contrato entre os clientes e a API é o OpenAPI publicado em [`/docs-json`](https://api.evchargeops.com.br/docs-json). O app e o portal geram tipos a partir dele (`openapi-typescript` + `openapi-fetch`).
-- A API é organizada em módulos com portas e adaptadores: `ChargerGateway`, `PaymentGateway`, `DemandFactorProvider`, `AnomalyScorer` e `MailSender`. Cada integração externa pode ser trocada ou desligada por variável de ambiente.
-- O DNS fica na DigitalOcean. A raiz `evchargeops.com.br` redireciona para o portal.
+- A API é organizada em módulos com portas e adaptadores: `ChargerGateway`, `PaymentGateway`, `DemandFactorProvider`, `AnomalyScorer`, `MailSender` e `PushSender`. Cada integração externa pode ser trocada ou desligada por variável de ambiente.
+- A API não tem processo em segundo plano. Sessões e filas avançam a cada leitura, e o app agenda lembretes locais a partir da linha do tempo projetada da sessão ([ADR 0017](adr/0017-push-notifications-and-projected-reminders.md)).
+- O DNS fica na DigitalOcean. A raiz `evchargeops.com.br` redireciona para o portal, que também serve as fotos e os vídeos em `/media`.
 
 ## 4. Repositórios e ambientes
 
@@ -112,7 +132,7 @@ flowchart LR
 | [`ev-charge-ops/docs`](https://github.com/ev-charge-ops/docs) | este README, [ADRs](adr/) e [evidências](evidencias/) | — |
 | [`ev-charge-ops/api`](https://github.com/ev-charge-ops/api) | API NestJS 12, Prisma 7, Postgres | [api.evchargeops.com.br](https://api.evchargeops.com.br) · Swagger em [/docs](https://api.evchargeops.com.br/docs) |
 | [`ev-charge-ops/web`](https://github.com/ev-charge-ops/web) | portal do gestor, React 19 + Vite + TanStack Query | [app.evchargeops.com.br](https://app.evchargeops.com.br) |
-| [`ev-charge-ops/mobile`](https://github.com/ev-charge-ops/mobile) | app do motorista, Expo SDK 57 + Expo Router | APK Android (EAS) e iOS pelo TestFlight; links no `.TXT` da entrega |
+| [`ev-charge-ops/mobile`](https://github.com/ev-charge-ops/mobile) | app do motorista, Expo SDK 57 + Expo Router, versão 1.3.0 | APK Android (EAS) e iOS pelo TestFlight; links no `.TXT` da entrega |
 | [`ev-charge-ops/ml`](https://github.com/ev-charge-ops/ml) | modelos, notebooks e API de inferência, FastAPI + scikit-learn | [ml.evchargeops.com.br/health](https://ml.evchargeops.com.br/health) |
 
 ## 5. Como os critérios da sprint são atendidos
