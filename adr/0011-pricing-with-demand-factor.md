@@ -40,7 +40,7 @@ A IA roda num serviço separado (`ml`). O preço precisa sair mesmo que esse ser
   - A recarga nunca depende do serviço `ml` para começar. No pior caso, o atraso é de 1,5 s.
   - Respeita a restrição da rede privada: o condômino paga o custo da energia, e o fator só orienta o horário.
 - **Negativas e riscos:**
-  - A fila (`queueLength`) ainda é sempre 0, porque não existe reserva nem fila no produto. O modelo aceita a variável, mas hoje ela não pesa.
+  - A fila (`queueLength`) era sempre 0, porque não existia fila no produto. **Atualização (2026-10-08):** com a fila por ponto (ADR 0019), o tamanho real da fila passou a ser enviado ao modelo e à regra.
   - O modelo foi treinado com dados da Noruega e da Finlândia. Os pesos e a curva de conversão precisam ser recalibrados com o histórico real do condomínio.
   - O fator é calculado para o local inteiro (ocupação da organização), não por ponto.
 - **Desvio da Sprint 01:** a fórmula foi mantida. A taxa de acesso mensal entrou no rateio (ADR 0013), mas não na sessão. Previsão de custo por regressão, clustering K-Means e previsão de capacidade por séries temporais, listados como abordagens de IA, ficaram fora do MVP. O app mostra o preço por kWh do momento antes de iniciar.
