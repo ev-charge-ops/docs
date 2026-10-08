@@ -271,19 +271,21 @@ Outros pontos que valem para todo o projeto:
 | Integração com o HCA G2 pela API SEMS (Remote Control e telemetria) | port `ChargerGateway` com `MockChargerGateway`; o adapter SEMS responde 501 | a integração com o carregador real não entrou nesta sprint; o simulador permite demonstrar o ciclo completo, e trocar por SEMS ou OCPP é escrever um adapter ([ADR 0010](adr/0010-charging-session-state-machine.md)) |
 | Telemetria em tempo real | telemetria simulada, lida sob demanda a cada consulta, com aceleração de tempo | API serverless, sem processo em segundo plano |
 | Stack genérica com Redis, Docker e Railway | NestJS, React, Expo e FastAPI na Vercel, Neon e EAS | custo zero, previews por PR e nenhum servidor para manter ([ADR 0015](adr/0015-deploy-and-ci.md)) |
-| Pré-autorização Stripe antes de qualquer recarga | só no ponto `COMMERCIAL`; na rede privada, rateio mensal | não bloquear saldo de condôminos a cada recarga ([ADR 0014](adr/0014-stripe-preauthorization.md)) |
+| Pré-autorização Stripe antes de qualquer recarga | só nos pontos `COMMERCIAL`; na rede privada, rateio mensal | não bloquear saldo de condôminos a cada recarga ([ADR 0014](adr/0014-stripe-preauthorization.md)) |
 | NFS-e automática na rede comercial | não implementada | fora do escopo do MVP |
-| Exportação PDF/CSV e boleto | só CSV, no formato do Excel em português | o CSV já entra no boleto condominial pela administradora |
-| Mapa com Google Maps ou Mapbox | lista de pontos com estado e preço | o cenário é um único condomínio com três pontos |
-| Push nas etapas −15 min, conclusão e início da multa | estado, tolerância e multa visíveis ao vivo no app; sem push | a priorização ficou com o ciclo de cobrança |
-| Painel de capacidade com throttling lido do carregador | demanda contratada, reserva, demanda atual, pico médio diário e alerta acima de 80%; potência alocada no início da sessão | sem telemetria real de throttling |
-| IA: precificação, K-Means, anomalias, previsão de custo e de capacidade | precificação (GradientBoosting) e anomalias (IsolationForest) em produção | o critério de sucesso pedia pelo menos um modelo, e entregamos dois com fallback |
+| Exportação PDF/CSV e boleto | só CSV, no formato do Excel em português; o motorista vê o extrato da unidade no app | o CSV já entra no boleto condominial pela administradora |
+| Mapa com Google Maps ou Mapbox | mapa do Google no app, com pins por estado, filtros e lista por distância; o centro é fixo no condomínio de demonstração, sem pedir o GPS | a pedido do PO, a demonstração mostra o condomínio e a rede comercial fictícia ao redor; voltar ao GPS é uma configuração do app |
+| Push nas etapas −15 min, conclusão e início da multa | avisos e push na conclusão, 2 min antes do fim da tolerância e no início da multa, mais pagamento, interrupção, convite e fila; sem o aviso de −15 min | sem processo em segundo plano, os lembretes da recarga são agendados no aparelho pela linha do tempo projetada ([ADR 0017](adr/0017-push-notifications-and-projected-reminders.md)) |
+| Painel de capacidade com throttling lido do carregador | demanda contratada, reserva, potência ao vivo por ponto, pico do mês, pico médio diário e alerta acima de 80%; potência alocada no início da sessão | sem telemetria real de throttling |
+| IA: precificação, K-Means, anomalias, previsão de custo e de capacidade | precificação (GradientBoosting) e anomalias (IsolationForest) em produção, com revisão das anomalias pelo gestor | o critério de sucesso pedia pelo menos um modelo, e entregamos dois com fallback e decisão humana registrada ([ADR 0020](adr/0020-manager-anomaly-review.md)) |
 | Dataset do Kaggle (72.856 sessões) | conjuntos públicos da Noruega e de Turku no Zenodo (CC BY 4.0) | licença clara, separação residencial e pública, e tempo ocioso disponível |
-| Login com e-mail e OAuth | e-mail e senha, código ou link mágico, Google e Apple, convites por deep link | o Apple é exigido pela App Store quando há login social ([ADR 0008](adr/0008-authentication-flows.md)) |
+| Login com e-mail e OAuth | e-mail e senha, código ou link mágico, Google e Apple, convites por deep link, edição do perfil e troca de senha | o Apple é exigido pela App Store quando há login social ([ADR 0008](adr/0008-authentication-flows.md)) |
 | Protótipo numa VPS com Expo Go | builds reais (APK e TestFlight) e atualizações OTA | distribuição de verdade, sem bundle de desenvolvimento |
-| Termo de consentimento LGPD no onboarding | páginas de privacidade e termos no portal; cartão só no Stripe | a tela de consentimento do protótipo não foi portada para o app |
+| Termo de consentimento LGPD no onboarding | consentimento por finalidade no primeiro acesso do app, com histórico por versão, exportação dos dados e pedido de exclusão | separar o obrigatório do opcional e atender aos direitos do titular ([ADR 0018](adr/0018-lgpd-consent.md)) |
+| Fila e vaga ocupada como maior problema; fila como entrada do preço | fila por ponto com reserva de 10 minutos; o tamanho da fila entra no fator de demanda | a fila não estava detalhada no plano ([ADR 0019](adr/0019-charge-point-queue.md)) |
+| Identidade visual escura com vermelho | design system Pulse, claro, com superfícies noturnas no mapa e na recarga ao vivo | o vermelho de marca competia com os alertas, e o kWh não tinha hierarquia ([ADR 0016](adr/0016-pulse-design-system.md)) |
 
-Entraram sem estar no plano: login sem senha, convites com deep link, organizações com vários papéis, versionamento de tarifas e explicação do score de anomalia no portal.
+Entraram sem estar no plano: login sem senha, convites com deep link, organizações com vários papéis, versionamento de tarifas, explicação e revisão do score de anomalia no portal, limite de recarga por % da bateria, extrato da unidade no app, fotos dos pontos e a rede comercial fictícia da demonstração.
 
 ## 10. Evidências
 
@@ -291,6 +293,7 @@ A pasta [`evidencias/`](evidencias/) tem a lista do que foi capturado e os arqui
 
 - **Vídeo da demonstração:** _link a preencher_
 - **Capturas de tela:** [`evidencias/`](evidencias/), com a lista em [`evidencias/README.md`](evidencias/README.md)
+- **Referência de design:** [canvas do Pulse](https://claude.ai/artifact/BWq3Na6AKkLLsnc3KUbHgR), com uma prancheta por tela do app e do portal
 - **Notebooks do `ml`**, versionados já executados, com saídas e gráficos:
   - [01 — análise exploratória](https://github.com/ev-charge-ops/ml/blob/main/notebooks/01-exploratory-analysis.ipynb)
   - [02 — fator de demanda](https://github.com/ev-charge-ops/ml/blob/main/notebooks/02-demand-factor.ipynb)
@@ -304,20 +307,28 @@ A pasta [`evidencias/`](evidencias/) tem a lista do que foi capturado e os arqui
 **Limitações**
 
 - O carregador é simulado: não há comunicação real com o HCA G2.
-- Sem processo em segundo plano, uma sessão só avança quando alguém a consulta. Os valores continuam corretos, porque são calculados pelos horários.
-- O fator de demanda considera a ocupação do local inteiro, e a fila é sempre 0 porque não há reservas.
+- Sem processo em segundo plano, sessões e filas só avançam quando alguém as consulta. Os valores continuam corretos, porque são calculados pelos horários.
+- Os lembretes da recarga dependem da linha do tempo projetada pelo simulador. Com o carregador real, a projeção não existe, e os avisos voltariam a depender de uma leitura da sessão ou de um job.
+- O push real depende de `PUSH_DRIVER=expo` no ambiente. Os recibos de entrega do Expo não são consultados.
+- O fator de demanda considera a ocupação e a fila do local inteiro, não de cada ponto.
 - Os modelos foram treinados com dados europeus e as anomalias foram avaliadas com casos sintéticos.
+- A revisão de anomalias não altera valores: uma anomalia confirmada exige ajuste fora do sistema.
+- A reserva da fila usa 10 minutos reais, mesmo na simulação acelerada.
+- Não há como mudar o limite de uma sessão em andamento; é preciso encerrar e iniciar outra.
+- As estimativas do limite por % no app usam a bateria de referência do simulador (50 kWh com 42%), porque o veículo só é conhecido depois de plugado.
+- O pedido de exclusão de conta é só registrado; a exclusão é feita pela equipe.
+- O mapa usa o condomínio de demonstração como centro, não a localização do aparelho.
 - O rate limit fica em memória por instância serverless.
 - O Stripe está em modo de teste e não há NFS-e.
 - O rateio é calculado na consulta, sem fechamento congelado do mês.
-- Não há notificações push.
 
 **Próximos passos**
 
 1. Adapter `SemsChargerGateway` com a API SEMS da GoodWe (CrossLogin, Remote Control e telemetria), validado no HCA G2 do laboratório.
-2. Job agendado para avançar sessões abertas e disparar push (−15 min, carga completa e início da multa).
+2. Job agendado para avançar sessões e filas abertas e disparar os avisos quando o carregador real não permitir projeção.
 3. Fechamento mensal congelado, PDF e integração com boleto condominial.
-4. Registrar a decisão do gestor sobre cada anomalia, para recalibrar o limiar e treinar um modelo supervisionado.
-5. Retreinar o fator de demanda com o histórico do condomínio e calcular o fator por ponto, com reservas e fila.
+4. Usar as revisões do gestor como rótulos para recalibrar o limiar e treinar um modelo supervisionado, e permitir ajuste de valor a partir de uma anomalia confirmada.
+5. Retreinar o fator de demanda com o histórico do condomínio, respeitando o consentimento `USAGE_ANALYTICS`, e calcular o fator por ponto.
 6. NFS-e e taxa da plataforma na rede comercial.
-7. Rate limit compartilhado (Redis/Upstash) e refresh token em cookie HttpOnly no portal.
+7. Processar os pedidos de exclusão com anonimização das sessões que precisam ser mantidas.
+8. Rate limit compartilhado (Redis/Upstash) e refresh token em cookie HttpOnly no portal.
