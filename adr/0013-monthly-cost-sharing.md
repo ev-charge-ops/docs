@@ -35,6 +35,8 @@ O síndico precisa de um extrato por unidade que possa lançar no boleto condomi
   | `GET /organizations/:id/overview` | visão geral do mês: consumo, valores, demanda e anomalias |
   | `GET /organizations/:id/sessions` | sessões com filtros de mês, unidade, ponto, estado e anomalia |
 
+  **Atualização (2026-10-08):** o motorista passou a ver o extrato da própria unidade em `GET /me/statements/{month}`, com o mesmo cálculo do gestor e a energia por dia ([`unit-statement.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/unit-statement.ts)). A visão geral também ganhou o mês anterior, as sessões de visitantes, o pico de demanda do mês e a potência e o estado ao vivo de cada ponto.
+
 - **CSV** ([`statement-csv.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/statement-csv.ts)): separador `;`, vírgula decimal, BOM UTF-8 e cabeçalho `unidade;kwh;energia;acesso;ocupacao;total`. Assim o arquivo abre direto no Excel em português.
 - **Capacidade elétrica na visão geral:** demanda contratada, reserva das áreas comuns, demanda atual, média dos picos diários e alerta de aumento de demanda quando o pico médio passa de 80% do contratado ([`demand-profile.ts`](https://github.com/ev-charge-ops/api/blob/main/src/modules/cost-sharing/domain/demand-profile.ts)).
 - **Valores inteiros:** dinheiro em centavos e energia em Wh no domínio, para não acumular erro de arredondamento na soma das sessões.
