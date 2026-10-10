@@ -30,6 +30,7 @@ A Sprint 01 previa Docker, Redis e Railway, e o protótipo rodava numa VPS com M
 - **EAS Workflows** no `mobile` ([`deploy-preview.yml`](https://github.com/ev-charge-ops/mobile/blob/main/.eas/workflows/deploy-preview.yml)): a cada push na `main`, o fingerprint nativo é calculado por plataforma.
   - Fingerprint novo, ou seja, mudança nativa: build novo, com APK Android de distribuição interna e build iOS enviado ao TestFlight.
   - Fingerprint já existente, ou seja, mudança só de JavaScript: atualização OTA (EAS Update) no canal `preview`, sem novo build.
+  - Para a App Store, o workflow manual [`release-production.yml`](https://github.com/ev-charge-ops/mobile/blob/main/.eas/workflows/release-production.yml) gera o build iOS no perfil e no canal `production` e o envia ao App Store Connect ([ADR 0025](0025-app-store-release.md)). Os builds do `deploy-preview.yml` ficam só no TestFlight.
   - Cada PR publica uma OTA no branch do PR para revisão ([`publish-pr-update.yml`](https://github.com/ev-charge-ops/mobile/blob/main/.eas/workflows/publish-pr-update.yml)).
   - Todo deploy do app passa por esses workflows, na nuvem da EAS. Não há `eas update` nem build feitos da máquina de um integrante.
   - O projeto está no plano pago **Expo Starter**, com cota de builds na nuvem maior que a do plano gratuito.
