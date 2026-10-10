@@ -13,7 +13,7 @@ Os fluxos de autenticação dependem de e-mails confiáveis e de links estáveis
   - `app.evchargeops.com.br` → portal (Vercel);
   - `api.evchargeops.com.br` → API (Vercel, região `gru1`);
   - `ml.evchargeops.com.br` → serviço de IA (Vercel);
-  - a raiz redireciona com 308 para `app.`.
+  - a raiz redireciona com 308 para `www.`, que serve o site do produto desde 2026-10-08 ([ADR 0024](0024-landing-page-on-the-portal-project.md)). Antes, ela redirecionava para `app.`.
 - **E-mail transacional:** Resend, região `sa-east-1`, remetente `EV ChargeOps <noreply@evchargeops.com.br>`.
   - Registros: DKIM (`resend._domainkey`), SPF/return-path via CNAME (`send`, `rsend`) e DMARC `p=none` para monitorar antes de endurecer.
   - O rastreamento de cliques e aberturas fica desligado, para não reescrever links com tokens.

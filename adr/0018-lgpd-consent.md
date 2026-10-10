@@ -1,6 +1,6 @@
 # ADR 0018 — Consentimento LGPD, exportação e pedido de exclusão de dados
 
-- **Status:** aceita
+- **Status:** aceita; a parte do pedido de exclusão foi substituída pelo [ADR 0023](0023-account-deletion.md)
 - **Data:** 2026-10-08
 
 ## Contexto
@@ -41,7 +41,7 @@ Precisávamos separar o que é necessário para o serviço do que é opcional, g
   - O titular exporta os próprios dados e pede a exclusão pelo app, sem depender do síndico.
   - O uso dos dados para a IA tem finalidade própria e opcional.
 - **Negativas e riscos:**
-  - O pedido de exclusão é só registrado. A anonimização e a exclusão precisam ser feitas pela equipe, e as sessões usadas no rateio do condomínio têm de ser mantidas pelo prazo legal.
+  - O pedido de exclusão é só registrado. Desde o [ADR 0023](0023-account-deletion.md), a exclusão é feita pelo próprio app com `DELETE /me`, e este item vale só para o histórico. A anonimização e a exclusão precisam ser feitas pela equipe, e as sessões usadas no rateio do condomínio têm de ser mantidas pelo prazo legal.
   - A escolha `USAGE_ANALYTICS` ainda não filtra os dados de treino, porque os modelos atuais foram treinados só com dados públicos (ADR 0011 e ADR 0012). O filtro passa a ser necessário quando o retreino usar o histórico do condomínio.
   - O consentimento é coletado no app. Gestores que só usam o portal não passam pela tela de aceite.
   - As páginas legais não identificam controlador nem encarregado (DPO), porque o projeto é acadêmico. O encarregado aponta para o e-mail de privacidade.
