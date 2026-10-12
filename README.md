@@ -25,7 +25,6 @@ Este repositório é o ponto de entrada da entrega. Ele reúne a visão geral, a
 | Integrante | RM |
 |---|---|
 | Carlos Eugenio Andrade | RM570285 |
-| Julia Ramos | RM568988 |
 | Matheus Fuchelberguer | RM571321 |
 | Rodrigo Gomes Dias | RM569142 |
 
