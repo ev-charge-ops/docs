@@ -8,7 +8,8 @@ Conteúdo enviado ao App Store Connect na submissão do app iOS do EV ChargeOps.
 | Bundle ID | `io.softmoon.evchargeops` |
 | Time | Softmoon.Io (`JWSCRB8HGL`) |
 | Versão | `1.4.1`, build 29, do perfil `production` (`expo.version` do [`app.json`](https://github.com/ev-charge-ops/mobile/blob/main/app.json); o build é incrementado pelo EAS) |
-| Situação | enviada para revisão em 2026-10-08, aguardando revisão, com lançamento automático após a aprovação ([ADR 0025](adr/0025-app-store-release.md)) |
+| Situação | **aprovada e publicada**: enviada para revisão em 2026-10-08, aprovada pela Apple e lançada automaticamente ([ADR 0025](adr/0025-app-store-release.md)) |
+| Link na loja | [https://apps.apple.com/br/app/ev-chargeops/id6819532299](https://apps.apple.com/br/app/ev-chargeops/id6819532299) |
 | Idioma principal | Português (Brasil) |
 
 ## 1. Informações do app (App Information)

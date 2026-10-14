@@ -1,6 +1,6 @@
 # ADR 0025 — Publicação do app na App Store
 
-- **Status:** aceita
+- **Status:** aceita; a versão 1.4.1 foi aprovada e está [na App Store](https://apps.apple.com/br/app/ev-chargeops/id6819532299)
 - **Data:** 2026-10-08
 - **Complementa:** ADR 0015 (deploy e CI)
 

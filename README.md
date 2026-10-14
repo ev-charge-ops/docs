@@ -6,6 +6,31 @@ Plataforma de gestão de recarga de veículos elétricos em infraestrutura compa
 
 Este repositório é o ponto de entrada da entrega. Ele reúne a visão geral, a arquitetura, os registros de decisão (ADRs), as evidências e os links para os demais repositórios e para o ambiente de produção.
 
+## Instale o app
+
+<table>
+<tr>
+<td>
+
+**O EV ChargeOps está publicado na App Store**, grátis, para iPhone no Brasil.
+
+<a href="https://apps.apple.com/br/app/ev-chargeops/id6819532299"><img src="assets/app-store-badge.svg" width="220" alt="Baixar na App Store"></a>
+
+1. Abra o [link da App Store](https://apps.apple.com/br/app/ev-chargeops/id6819532299) no iPhone ou aponte a câmera para o QR code ao lado.
+2. Toque em **Obter** e abra o app.
+3. Entre com a conta do **motorista de demonstração** (`driver@evchargeops.dev`). A senha está no arquivo `.TXT` da entrega.
+4. Siga o [roteiro de teste](#6-como-testar-a-demonstração-em-produção).
+
+O portal do síndico fica em [app.evchargeops.com.br](https://app.evchargeops.com.br) e o site do produto em [www.evchargeops.com.br](https://www.evchargeops.com.br). No Android, o app é instalado pelo APK, com o link no `.TXT`.
+
+</td>
+<td align="center">
+<img src="assets/app-store-qr.png" width="180" alt="QR code para o EV ChargeOps na App Store"><br>
+<sub>Leia com a câmera do iPhone</sub>
+</td>
+</tr>
+</table>
+
 ## Sumário
 
 1. [Equipe](#1-equipe)
@@ -59,7 +84,7 @@ Ao redor do condomínio, o seed cria uma **rede comercial fictícia**, com 3 ope
 
 Além dela, o mapa mostra a **rede pública real do Brasil**, importada do [Open Charge Map](https://openchargemap.org) (CC BY-SA 4.0): 1.784 pontos de 64 operadoras em 25 estados, com atribuição no app e preços de demonstração ([ADR 0022](adr/0022-open-charge-map-and-map-at-scale.md)).
 
-- **App do motorista** (Expo, Android e iOS, versão 1.4.1, enviada para a revisão da App Store). A navegação tem quatro abas e um botão redondo de recarga:
+- **App do motorista** (Expo, Android e iOS, versão 1.4.1, [publicada na App Store](https://apps.apple.com/br/app/ev-chargeops/id6819532299)). A navegação tem quatro abas e um botão redondo de recarga:
   - **Início:** saudação com condomínio e unidade, a recarga em andamento (carga, limite, previsão de término, energia, potência e valor) e os pontos do condomínio com foto, preço e estado;
   - **Pontos:** mapa noturno em tela cheia com pins por estado, agrupamento em clusters no zoom de país e de estado, filtros (livres, potência e regime), modo lista ordenado por distância e o detalhe do ponto numa sheet clara com foto, preço, fator de demanda e regra de cobrança;
   - **Histórico:** extrato do mês da unidade (rateio, energia por dia, taxa de acesso e ocupação) e a lista de recargas, com o recibo de cada uma;
@@ -136,7 +161,7 @@ flowchart LR
 | [`ev-charge-ops/docs`](https://github.com/ev-charge-ops/docs) | este README, [ADRs](adr/) e [evidências](evidencias/) | — |
 | [`ev-charge-ops/api`](https://github.com/ev-charge-ops/api) | API NestJS 12, Prisma 7, Postgres | [api.evchargeops.com.br](https://api.evchargeops.com.br) · Swagger em [/docs](https://api.evchargeops.com.br/docs) |
 | [`ev-charge-ops/web`](https://github.com/ev-charge-ops/web) | portal do gestor, React 19 + Vite + TanStack Query, e o site do produto em `public/landing` | [app.evchargeops.com.br](https://app.evchargeops.com.br) · site em [www.evchargeops.com.br](https://www.evchargeops.com.br) |
-| [`ev-charge-ops/mobile`](https://github.com/ev-charge-ops/mobile) | app do motorista, Expo SDK 57 + Expo Router, versão 1.4.1 | APK Android (EAS), iOS pelo TestFlight e versão 1.4.1 aguardando a revisão da App Store; links no `.TXT` da entrega |
+| [`ev-charge-ops/mobile`](https://github.com/ev-charge-ops/mobile) | app do motorista, Expo SDK 57 + Expo Router, versão 1.4.1 | [App Store](https://apps.apple.com/br/app/ev-chargeops/id6819532299) (iOS, versão 1.4.1), APK Android (EAS) e TestFlight; links no `.TXT` da entrega |
 | [`ev-charge-ops/ml`](https://github.com/ev-charge-ops/ml) | modelos, notebooks e API de inferência, FastAPI + scikit-learn | [ml.evchargeops.com.br/health](https://ml.evchargeops.com.br/health) |
 
 ## 5. Como os critérios da sprint são atendidos
@@ -221,7 +246,7 @@ O seed cria o condomínio **Residencial Aclimação** com 3 pontos (2 `PRIVATE` 
 ### Roteiro sugerido
 
 1. **Portal, como gestor:** entre em [app.evchargeops.com.br](https://app.evchargeops.com.br). Na **Visão geral**, veja os pontos em uso, a capacidade elétrica com o pico do mês, os indicadores contra o mês anterior e as anomalias. Clique em **Revisar** numa anomalia, confirme ou descarte com uma observação e veja que o valor da sessão não muda. Abra **Sessões**, ligue "Somente anomalias" e abra a gaveta de uma sessão. Abra **Rateio mensal**, troque o mês e exporte o CSV.
-2. **App, como motorista:** instale o app (link do APK Android ou convite do TestFlight no `.TXT`) e entre com a conta do motorista. Se a tela de consentimentos aparecer, aceite as finalidades obrigatórias. Em **Início**, veja o condomínio e os pontos; em **Pontos**, veja o mapa e a lista por distância.
+2. **App, como motorista:** instale o app pela [App Store](https://apps.apple.com/br/app/ev-chargeops/id6819532299) no iPhone (ou pelo APK Android, com o link no `.TXT`) e entre com a conta do motorista. Se a tela de consentimentos aparecer, aceite as finalidades obrigatórias. Em **Início**, veja o condomínio e os pontos; em **Pontos**, veja o mapa e a lista por distância.
 3. **Recarga num ponto privado:** abra L1-01 ou L1-02, veja o preço e o fator de demanda informativo, toque em **Iniciar recarga**, escolha o limite (por exemplo 80%) e confirme.
 4. **Simulação acelerada:** em produção, cada segundo real equivale a um minuto de recarga (`SIMULATION_SPEED`). Em poucos minutos a sessão passa por carregando, tolerância (10 min simulados) e ocupação com multa, na tela noturna. Os lembretes locais avisam a conclusão, o fim da tolerância e o início da multa. Encerre a sessão e veja o recibo.
 5. **Histórico e portal:** no app, a sessão aparece no **Histórico** e no extrato do mês da unidade B · 42. No portal, ela aparece em **Sessões**, com o score de anomalia, e no **Rateio** da mesma unidade, com o mesmo valor.
@@ -293,12 +318,12 @@ Outros pontos que valem para todo o projeto:
 | IA: precificação, K-Means, anomalias, previsão de custo e de capacidade | precificação (GradientBoosting) e anomalias (IsolationForest) em produção, com revisão das anomalias pelo gestor | o critério de sucesso pedia pelo menos um modelo, e entregamos dois com fallback e decisão humana registrada ([ADR 0020](adr/0020-manager-anomaly-review.md)) |
 | Dataset do Kaggle (72.856 sessões) | conjuntos públicos da Noruega e de Turku no Zenodo (CC BY 4.0) | licença clara, separação residencial e pública, e tempo ocioso disponível |
 | Login com e-mail e OAuth | e-mail e senha, código ou link mágico, Google e Apple, convites por deep link, edição do perfil e troca de senha | o Apple é exigido pela App Store quando há login social ([ADR 0008](adr/0008-authentication-flows.md)) |
-| Protótipo numa VPS com Expo Go | builds reais (APK e TestFlight), atualizações OTA e a versão 1.4.1 enviada para a revisão da App Store | distribuição de verdade, sem bundle de desenvolvimento ([ADR 0025](adr/0025-app-store-release.md)) |
+| Protótipo numa VPS com Expo Go | builds reais (APK e TestFlight), atualizações OTA e a versão 1.4.1 [publicada na App Store](https://apps.apple.com/br/app/ev-chargeops/id6819532299) | distribuição de verdade, sem bundle de desenvolvimento ([ADR 0025](adr/0025-app-store-release.md)) |
 | Termo de consentimento LGPD no onboarding | consentimento por finalidade no primeiro acesso do app, com histórico por versão, exportação dos dados e exclusão da conta pelo próprio app ([ADR 0023](adr/0023-account-deletion.md)) | separar o obrigatório do opcional e atender aos direitos do titular ([ADR 0018](adr/0018-lgpd-consent.md)) |
 | Fila e vaga ocupada como maior problema; fila como entrada do preço | fila por ponto com reserva de 10 minutos; o tamanho da fila entra no fator de demanda | a fila não estava detalhada no plano ([ADR 0019](adr/0019-charge-point-queue.md)) |
 | Identidade visual escura com vermelho | design system Pulse, claro, com superfícies noturnas no mapa e na recarga ao vivo | o vermelho de marca competia com os alertas, e o kWh não tinha hierarquia ([ADR 0016](adr/0016-pulse-design-system.md)) |
 
-Entraram sem estar no plano: o site do produto, a rede pública do Open Charge Map, a publicação na App Store, login sem senha, convites com deep link, organizações com vários papéis, versionamento de tarifas, explicação e revisão do score de anomalia no portal, limite de recarga por % da bateria, extrato da unidade no app, fotos dos pontos e a rede comercial fictícia da demonstração.
+Entraram sem estar no plano: o site do produto, a rede pública do Open Charge Map, a publicação aprovada na App Store, login sem senha, convites com deep link, organizações com vários papéis, versionamento de tarifas, explicação e revisão do score de anomalia no portal, limite de recarga por % da bateria, extrato da unidade no app, fotos dos pontos e a rede comercial fictícia da demonstração.
 
 ## 10. Evidências
 
@@ -308,7 +333,7 @@ A pasta [`evidencias/`](evidencias/) tem as capturas organizadas por área, com 
 - **App do motorista:** 14 capturas reais do iPhone, do Início ao recibo, em [`evidencias/app/`](evidencias/app/)
 - **Portal do gestor:** visão geral, revisão de anomalia, sessões, rateio, pontos, tarifa, moradores e convite, em [`evidencias/portal/`](evidencias/portal/)
 - **Site do produto:** computador, celular e imagens de compartilhamento, em [`evidencias/site/`](evidencias/site/)
-- **App Store:** as 7 capturas da loja, a versão 1.4.1 aguardando revisão e os e-mails de recusa por falta de textos de permissão, em [`evidencias/app-store/`](evidencias/app-store/)
+- **App Store:** as 7 capturas da loja, o envio para revisão, o e-mail de aprovação, o app na busca da App Store e os e-mails de recusa por falta de textos de permissão, em [`evidencias/app-store/`](evidencias/app-store/)
 - **API e infraestrutura:** Swagger, `/health` do `ml` e a organização no GitHub, em [`evidencias/infra/`](evidencias/infra/)
 - **Visual antigo:** capturas anteriores ao Pulse, só como histórico, em [`evidencias/historico/`](evidencias/historico/)
 - **Textos da loja:** [`app-store.md`](app-store.md)

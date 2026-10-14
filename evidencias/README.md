@@ -93,6 +93,12 @@ Capturas enviadas à loja, em 1206×2622 (iPhone de 6,3"), feitas a partir de te
 | <img src="app-store/screenshot-01.png" width="180" alt="Captura 1 da loja"> | <img src="app-store/screenshot-02.png" width="180" alt="Captura 2 da loja"> | <img src="app-store/screenshot-03.png" width="180" alt="Captura 3 da loja"> | <img src="app-store/screenshot-04.png" width="180" alt="Captura 4 da loja"> |
 | <img src="app-store/screenshot-05.png" width="180" alt="Captura 5 da loja"> | <img src="app-store/screenshot-06.png" width="180" alt="Captura 6 da loja"> | <img src="app-store/screenshot-07.png" width="180" alt="Captura 7 da loja"> | |
 
+**Publicação:** a Apple aprovou a versão 1.4.1 e o app aparece na busca da App Store ([link](https://apps.apple.com/br/app/ev-chargeops/id6819532299)):
+
+| App na busca da App Store | E-mail de aprovação |
+|---|---|
+| <img src="app-store/asc-04-app-na-loja.jpg" width="260" alt="EV ChargeOps na busca da App Store"> | <img src="app-store/asc-05-aprovado.jpg" width="260" alt="E-mail da Apple: app pronto para distribuição"> |
+
 **Revisão:** a versão 1.4.1 aguardando revisão. O envio anterior foi removido porque usava um build de preview:
 
 ![Revisão no App Store Connect](app-store/asc-01-revisao.jpg)
@@ -179,7 +185,7 @@ Capturas da primeira versão, escura com vermelho, antes do design system Pulse 
 ### Site, loja, API, IA e infraestrutura
 
 - [x] `site-01` a `site-06`: site no computador e no celular e imagens de compartilhamento
-- [x] `app-store/screenshot-01` a `07` e `asc-01` a `03`
+- [x] `app-store/screenshot-01` a `07` e `asc-01` a `05`, com a aprovação e o app na loja
 - [x] `api-01-swagger`
 - [x] `ml-01-health` (texto acima)
 - [ ] `ml-02-demand-factor` e `ml-03-anomaly-score`: respostas de `POST /demand-factor` e `POST /anomaly-score`
