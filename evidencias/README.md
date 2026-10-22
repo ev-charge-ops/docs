@@ -12,9 +12,10 @@ Capturas do app, do portal, do site do produto, da publicação na App Store e d
 2. [Portal do gestor](#portal-do-gestor)
 3. [Site do produto](#site-do-produto)
 4. [App Store](#app-store)
-5. [API, IA e infraestrutura](#api-ia-e-infraestrutura)
-6. [Visual antigo](#visual-antigo)
-7. [Roteiro de capturas](#roteiro-de-capturas)
+5. [Google Play](#google-play)
+6. [API, IA e infraestrutura](#api-ia-e-infraestrutura)
+7. [Visual antigo](#visual-antigo)
+8. [Roteiro de capturas](#roteiro-de-capturas)
 
 ## App do motorista
 
@@ -108,6 +109,18 @@ Capturas enviadas à loja, em 1206×2622 (iPhone de 6,3"), feitas a partir de te
 | | |
 |---|---|
 | <img src="app-store/asc-02-email-itms-90683-a.png" width="260" alt="E-mail da Apple ITMS-90683"> | <img src="app-store/asc-03-email-itms-90683-b.png" width="260" alt="Outro e-mail da Apple ITMS-90683"> |
+
+## Google Play
+
+O app foi aprovado e publicado em 2026-10-22 ([link](https://play.google.com/store/apps/details?id=io.softmoon.evchargeops)). Os textos e as declarações enviados estão em [`google-play.md`](../google-play.md).
+
+| App no Google Play | Recurso gráfico |
+|---|---|
+| <img src="google-play/gp-01-app-na-loja.jpg" width="420" alt="Página do EV ChargeOps no Google Play"> | <img src="google-play/gp-02-recurso-grafico.jpg" width="420" alt="Recurso gráfico 1024 por 500 do EV ChargeOps"> |
+
+As 7 capturas 1080 × 1920, o recurso gráfico e o ícone enviados:
+
+<img src="google-play/gp-03-imagens-da-loja.jpg" width="860" alt="Capturas, recurso gráfico e ícone do Google Play">
 
 ## API, IA e infraestrutura
 
